@@ -16,7 +16,7 @@ const chalk = require('chalk');
 //
 // Using the Azure CLI:
 // az iot hub device-identity show-connection-string --hub-name {YourIoTHubName} --device-id MyNodeDevice --output table
-var connectionString = '{Your device connection string here}';
+var connectionString = 'HostName=HackathonHub.azure-devices.net;DeviceId=HackathonDevice;SharedAccessKeyName=iothubowner;SharedAccessKey=oFjkTtodK/5hMxJnGdAz51+r+w7Lav8kKQXMsvGIHpk=';
 
 // Using the Node.js Device SDK for IoT Hub:
 //   https://github.com/Azure/azure-iot-sdk-node
@@ -29,6 +29,48 @@ var client = DeviceClient.fromConnectionString(connectionString, Mqtt);
 
 // Timeout created by setInterval
 var intervalLoop = null;
+
+//Global Variables
+var inventory = ['milk', 'eggs'];
+var foodItems = ['milk', 'eggs', 'cheese', 'tomatoes', 'butter'];
+
+// Add Function
+function addFunction(){
+	
+	var item = Math.floor(Math.random() * foodItems.length);
+	
+	var randomAddedItem = foodItems[item];
+	
+	
+	
+	if (inventory.indexOf(randomAddedItem) == -1) {
+		inventory.push(randomAddedItem);
+		console.log(randomAddedItem + ' added');
+	} else {
+		console.log(randomAddedItem + ' has already been added');
+	}
+	
+	
+	
+	
+	
+}
+
+// Remove Function
+function removeItem(){
+	
+	var item = Math.floor(Math.random() * inventory.length);
+	
+	var randomRemovedItem = foodItems[item];
+	
+	if (inventory.indexOf(randomRemovedItem) != -1) {
+		inventory.splice(inventory.indexOf(randomRemovedItem),1);
+		console.log(randomRemovedItem + ' removed');
+	} else {
+		console.log(randomRemovedItem + ' has already been removed');
+	}
+		
+}
 
 // Function to handle the SetTelemetryInterval direct method call from IoT hub
 function onSetTelemetryInterval(request, response) {
@@ -64,17 +106,24 @@ function onSetTelemetryInterval(request, response) {
 // Send a telemetry message to your hub
 function sendMessage(){
   // Simulate telemetry.
-  var temperature = 20 + (Math.random() * 15);
+  var randomAction = Math.floor(Math.random() * 2);
+  
+  var randomItem;
+  
+  
   var message = new Message(JSON.stringify({
-    temperature: temperature,
-    humidity: 60 + (Math.random() * 20)
+	inventory : inventory
   }));
 
   // Add a custom application property to the message.
   // An IoT hub can filter on these properties without access to the message body.
-  message.properties.add('temperatureAlert', (temperature > 30) ? 'true' : 'false');
-
-  console.log('Sending message: ' + message.getData());
+  if ( randomAction == 0 ){
+	  removeItem();
+  } else {
+	addFunction();
+	}
+	
+	console.log('Current inventory: ' + inventory);
 
   // Send the message.
   client.sendEvent(message, function (err) {
